@@ -1,0 +1,29 @@
+{
+  "name": "@spawn-dock/dev-tunnel",
+  "version": "1.0.0",
+  "description": "WebSocket tunnel client for SpawnDock local development preview",
+  "type": "module",
+  "bin": {
+    "spawndock-tunnel": "./dist/index.js"
+  },
+  "files": ["dist"],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/ws": "^8.5.0",
+    "typescript": "^5.9.0",
+    "vitest": "^4.1.0"
+  },
+  "keywords": ["spawndock", "tunnel", "telegram-mini-app", "tma", "dev-tunnel"],
+  "license": "MIT"
+}
