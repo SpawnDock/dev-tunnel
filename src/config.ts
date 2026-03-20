@@ -6,6 +6,7 @@ export interface TunnelConfig {
   projectSlug: string;
   deviceSecret: string;
   port: number;
+  previewPath?: string;
 }
 
 const PRIMARY_CONFIG_FILE = "spawndock.dev-tunnel.json";
@@ -46,8 +47,10 @@ function normalizeConfig(data: unknown): Partial<TunnelConfig> {
       : typeof record.localPort === "number"
         ? record.localPort
         : undefined;
+  const previewPath =
+    typeof record.previewPath === "string" ? record.previewPath : undefined;
 
-  return { controlPlane, projectSlug, deviceSecret, port };
+  return { controlPlane, projectSlug, deviceSecret, port, previewPath };
 }
 
 function readConfigFile(dir: string): Partial<TunnelConfig> {
@@ -134,10 +137,11 @@ export function resolveConfig(
   const projectSlug = args.projectSlug ?? env.projectSlug ?? file.projectSlug;
   const deviceSecret = args.deviceSecret ?? env.deviceSecret ?? file.deviceSecret;
   const port = args.port ?? env.port ?? file.port ?? 3000;
+  const previewPath = file.previewPath;
 
   if (!controlPlane) throw new Error("Missing --control-plane or SPAWNDOCK_CONTROL_PLANE");
   if (!projectSlug) throw new Error("Missing --project-slug or SPAWNDOCK_PROJECT_SLUG");
   if (!deviceSecret) throw new Error("Missing --device-secret or SPAWNDOCK_DEVICE_SECRET");
 
-  return { controlPlane, projectSlug, deviceSecret, port };
+  return { controlPlane, projectSlug, deviceSecret, port, previewPath };
 }

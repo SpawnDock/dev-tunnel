@@ -53,4 +53,21 @@ describe("resolveConfig", () => {
     expect(config.deviceSecret).toBe("secret123");
     expect(config.port).toBe(4010);
   });
+
+  it("reads previewPath from legacy spawndock.config.json", () => {
+    const dir = mkdtempSync(join(tmpdir(), "spawndock-config-"));
+    writeFileSync(
+      join(dir, "spawndock.config.json"),
+      JSON.stringify({
+        controlPlaneUrl: "http://localhost:8787",
+        projectSlug: "my-app",
+        deviceSecret: "secret123",
+        localPort: 4010,
+        previewPath: "/preview/my-app",
+      }),
+    );
+
+    const config = resolveConfig([], dir);
+    expect(config.previewPath).toBe("/preview/my-app");
+  });
 });

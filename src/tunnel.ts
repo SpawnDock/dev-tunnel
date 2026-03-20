@@ -10,6 +10,22 @@ export function createTunnel(config: TunnelConfig): void {
   connect(wsUrl, config, localOrigin);
 }
 
+function resolveForwardedPath(previewPath: string | undefined, path: string): string {
+  if (!previewPath || previewPath.length === 0) {
+    return path;
+  }
+
+  const normalizedPreviewPath = previewPath.replace(/\/$/, "");
+  const [pathname, query = ""] = path.split("?");
+
+  const forwardedPath =
+    pathname === "/"
+      ? `${normalizedPreviewPath}/`
+      : `${normalizedPreviewPath}${pathname}`;
+
+  return query.length > 0 ? `${forwardedPath}?${query}` : forwardedPath;
+}
+
 export function buildWsUrl(config: TunnelConfig): string {
   if (!URL.canParse(config.controlPlane)) {
     throw new Error(`Invalid control plane URL: ${config.controlPlane}`);
@@ -64,7 +80,13 @@ function connect(wsUrl: string, config: TunnelConfig, localOrigin: string): void
 
     if (msg.type === "http-request") {
       try {
-        const response = await proxyRequest(msg.request, localOrigin);
+        const response = await proxyRequest(
+          {
+            ...msg.request,
+            path: resolveForwardedPath(config.previewPath, msg.request.path),
+          },
+          localOrigin,
+        );
         ws.send(serialize({ type: "http-response", response }));
       } catch (err: any) {
         ws.send(serialize({
