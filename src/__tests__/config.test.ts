@@ -1,4 +1,7 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
+import { mkdtempSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { resolveConfig } from "../config.js";
 
 describe("resolveConfig", () => {
@@ -30,5 +33,24 @@ describe("resolveConfig", () => {
       "--device-secret", "secret",
     ]);
     expect(config.port).toBe(3000);
+  });
+
+  it("reads from spawndock.dev-tunnel.json", () => {
+    const dir = mkdtempSync(join(tmpdir(), "spawndock-dev-tunnel-"));
+    writeFileSync(
+      join(dir, "spawndock.dev-tunnel.json"),
+      JSON.stringify({
+        controlPlane: "http://localhost:8787",
+        projectSlug: "my-app",
+        deviceSecret: "secret123",
+        port: 4010,
+      }),
+    );
+
+    const config = resolveConfig([], dir);
+    expect(config.controlPlane).toBe("http://localhost:8787");
+    expect(config.projectSlug).toBe("my-app");
+    expect(config.deviceSecret).toBe("secret123");
+    expect(config.port).toBe(4010);
   });
 });

@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { parseInbound, serialize } from "../protocol.js";
+import { buildWsUrl } from "../tunnel.js";
 
 describe("parseInbound", () => {
   it("parses http-request", () => {
@@ -30,5 +31,21 @@ describe("serialize", () => {
     const parsed = JSON.parse(result);
     expect(parsed.type).toBe("hello");
     expect(parsed.projectSlug).toBe("test");
+  });
+
+  it("serializes heartbeat with protocol version compatible messages", () => {
+    const result = serialize({ type: "pong", nonce: "abc" });
+    expect(JSON.parse(result)).toEqual({ type: "pong", nonce: "abc" });
+  });
+
+  it("builds a tunnel url with protocolVersion and token", () => {
+    expect(
+      buildWsUrl({
+        controlPlane: "https://api.example.com",
+        projectSlug: "test",
+        deviceSecret: "secret-123",
+        port: 3000,
+      }),
+    ).toBe("wss://api.example.com/tunnel/connect?protocolVersion=1&token=secret-123");
   });
 });
