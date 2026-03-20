@@ -54,16 +54,18 @@ function normalizeConfig(data: unknown): Partial<TunnelConfig> {
 }
 
 function readConfigFile(dir: string): Partial<TunnelConfig> {
-  for (const fileName of [PRIMARY_CONFIG_FILE, LEGACY_CONFIG_FILE]) {
+  const merged: Partial<TunnelConfig> = {};
+
+  for (const fileName of [LEGACY_CONFIG_FILE, PRIMARY_CONFIG_FILE]) {
     try {
       const raw = readFileSync(resolve(dir, fileName), "utf-8");
-      return normalizeConfig(JSON.parse(raw));
+      Object.assign(merged, normalizeConfig(JSON.parse(raw)));
     } catch {
       // Try next candidate.
     }
   }
 
-  return {};
+  return merged;
 }
 
 function parseArgs(argv: string[]): Partial<TunnelConfig> {
