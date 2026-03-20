@@ -59,7 +59,12 @@ function readConfigFile(dir: string): Partial<TunnelConfig> {
   for (const fileName of [LEGACY_CONFIG_FILE, PRIMARY_CONFIG_FILE]) {
     try {
       const raw = readFileSync(resolve(dir, fileName), "utf-8");
-      Object.assign(merged, normalizeConfig(JSON.parse(raw)));
+      const next = normalizeConfig(JSON.parse(raw));
+      for (const [key, value] of Object.entries(next)) {
+        if (value !== undefined) {
+          (merged as Record<string, unknown>)[key] = value;
+        }
+      }
     } catch {
       // Try next candidate.
     }
