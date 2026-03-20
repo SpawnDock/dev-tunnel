@@ -1,4 +1,4 @@
-# @spawn-dock/dev-tunnel
+# `@spawn-dock/dev-tunnel`
 
 WebSocket tunnel client for SpawnDock local development preview. Exposes your local dev server through the SpawnDock control plane so others can preview your Telegram Mini App.
 
@@ -16,9 +16,9 @@ npx @spawn-dock/dev-tunnel
 
 ## Usage
 
-### With spawndock.config.json (recommended)
+### With `spawndock.dev-tunnel.json` (recommended)
 
-If your project has a `spawndock.config.json` file (created by the bootstrap CLI), just run:
+If your project has a `spawndock.dev-tunnel.json` file (created by the bootstrap CLI), just run:
 
 ```bash
 npx @spawn-dock/dev-tunnel
@@ -46,7 +46,7 @@ npx @spawn-dock/dev-tunnel
 
 ## Configuration Priority
 
-CLI arguments > Environment variables > spawndock.config.json
+CLI arguments > Environment variables > `spawndock.dev-tunnel.json` > legacy `spawndock.config.json`
 
 ## How it works
 

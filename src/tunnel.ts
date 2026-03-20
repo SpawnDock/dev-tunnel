@@ -1,4 +1,3 @@
-// src/tunnel.ts
 import WebSocket from "ws";
 import type { TunnelConfig } from "./config.js";
 import { parseInbound, serialize } from "./protocol.js";
@@ -11,9 +10,23 @@ export function createTunnel(config: TunnelConfig): void {
   connect(wsUrl, config, localOrigin);
 }
 
-function buildWsUrl(config: TunnelConfig): string {
-  const base = config.controlPlane.replace(/^http/, "ws").replace(/\/$/, "");
-  return `${base}/tunnel/connect?token=${encodeURIComponent(config.deviceSecret)}`;
+export function buildWsUrl(config: TunnelConfig): string {
+  if (!URL.canParse(config.controlPlane)) {
+    throw new Error(`Invalid control plane URL: ${config.controlPlane}`);
+  }
+
+  const url = new URL(config.controlPlane);
+  if (url.protocol === "http:") {
+    url.protocol = "ws:";
+  } else if (url.protocol === "https:") {
+    url.protocol = "wss:";
+  }
+
+  const currentPath = url.pathname.replace(/\/+$/, "");
+  url.pathname = currentPath.length === 0 ? "/tunnel/connect" : `${currentPath}/tunnel/connect`;
+  url.searchParams.set("protocolVersion", "1");
+  url.searchParams.set("token", config.deviceSecret);
+  return url.toString();
 }
 
 function connect(wsUrl: string, config: TunnelConfig, localOrigin: string): void {

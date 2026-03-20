@@ -9,5 +9,6 @@
     "esModuleInterop": true,
     "declaration": true,
     "sourceMap": true
-  }
+  },
+  "exclude": ["src/__tests__/**"]
 }
