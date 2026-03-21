@@ -6,6 +6,18 @@ const HOP_BY_HOP = new Set([
   "proxy-authorization", "te", "trailer", "transfer-encoding", "upgrade", "content-length",
 ]);
 
+function filterResponseHeaders(headers: Headers): [string, string][] {
+  const result: [string, string][] = [];
+
+  for (const [name, value] of headers.entries()) {
+    if (!HOP_BY_HOP.has(name.toLowerCase())) {
+      result.push([name, value]);
+    }
+  }
+
+  return result;
+}
+
 function decodeBody(body: { encoding: string; value: string }): string | ArrayBuffer {
   if (body.encoding === "utf8") return body.value;
   const buf = Buffer.from(body.value, "base64");
@@ -33,7 +45,7 @@ export async function proxyRequest(
   try {
     const res = await fetch(url, init);
     const bodyBytes = new Uint8Array(await res.arrayBuffer());
-    const responseHeaders: [string, string][] = Array.from(res.headers.entries());
+    const responseHeaders = filterResponseHeaders(res.headers);
 
     const response: SerializedHttpResponse = {
       requestId: request.requestId,
