@@ -5,12 +5,20 @@ const HOP_BY_HOP = new Set([
   "connection", "host", "keep-alive", "proxy-authenticate",
   "proxy-authorization", "te", "trailer", "transfer-encoding", "upgrade", "content-length",
 ]);
+const REQUEST_HEADERS_TO_DROP = new Set([
+  ...HOP_BY_HOP,
+  "accept-encoding",
+]);
+const RESPONSE_HEADERS_TO_DROP = new Set([
+  ...HOP_BY_HOP,
+  "content-encoding",
+]);
 
 function filterResponseHeaders(headers: Headers): [string, string][] {
   const result: [string, string][] = [];
 
   for (const [name, value] of headers.entries()) {
-    if (!HOP_BY_HOP.has(name.toLowerCase())) {
+    if (!RESPONSE_HEADERS_TO_DROP.has(name.toLowerCase())) {
       result.push([name, value]);
     }
   }
@@ -31,7 +39,7 @@ export async function proxyRequest(
   const url = new URL(request.path, localOrigin);
   const headers = new Headers();
   for (const [name, value] of request.headers) {
-    if (!HOP_BY_HOP.has(name.toLowerCase())) {
+    if (!REQUEST_HEADERS_TO_DROP.has(name.toLowerCase())) {
       headers.set(name, value);
     }
   }
