@@ -3,11 +3,16 @@ import type { TunnelConfig } from "./config.js";
 import { parseInbound, serialize } from "./protocol.js";
 import { proxyRequest } from "./proxy.js";
 
+const HEARTBEAT_INTERVAL_MS = 15_000;
+const INITIAL_RECONNECT_DELAY_MS = 1_000;
+const MAX_RECONNECT_DELAY_MS = 30_000;
+const MAX_RECONNECT_ATTEMPTS = 5;
+
 export function createTunnel(config: TunnelConfig): void {
   const localOrigin = `http://127.0.0.1:${config.port}`;
   const wsUrl = buildWsUrl(config);
 
-  connect(wsUrl, config, localOrigin);
+  connect(wsUrl, config, localOrigin, 0);
 }
 
 function resolveForwardedPath(previewPath: string | undefined, path: string): string {
@@ -45,7 +50,14 @@ export function buildWsUrl(config: TunnelConfig): string {
   return url.toString();
 }
 
-function connect(wsUrl: string, config: TunnelConfig, localOrigin: string): void {
+export function getReconnectDelayMs(attempt: number): number {
+  return Math.min(
+    INITIAL_RECONNECT_DELAY_MS * (2 ** Math.max(attempt - 1, 0)),
+    MAX_RECONNECT_DELAY_MS,
+  );
+}
+
+function connect(wsUrl: string, config: TunnelConfig, localOrigin: string, reconnectAttempt: number): void {
   const ws = new WebSocket(wsUrl);
   let heartbeatInterval: NodeJS.Timeout | null = null;
 
@@ -66,7 +78,7 @@ function connect(wsUrl: string, config: TunnelConfig, localOrigin: string): void
           timestamp: Date.now(),
         }));
       }
-    }, 15_000);
+    }, HEARTBEAT_INTERVAL_MS);
   });
 
   ws.on("message", async (data) => {
@@ -98,10 +110,23 @@ function connect(wsUrl: string, config: TunnelConfig, localOrigin: string): void
     }
   });
 
-  ws.on("close", () => {
+  ws.on("close", (code) => {
     if (heartbeatInterval) clearInterval(heartbeatInterval);
-    console.log("Disconnected. Reconnecting in 2s...");
-    setTimeout(() => connect(wsUrl, config, localOrigin), 2000);
+
+    if (code === 4001) {
+      console.log("Disconnected because another tunnel replaced this session.");
+      return;
+    }
+
+    const nextAttempt = reconnectAttempt + 1;
+    if (nextAttempt > MAX_RECONNECT_ATTEMPTS) {
+      console.error("Tunnel reconnect failed after 5 attempts.");
+      return;
+    }
+
+    const delayMs = getReconnectDelayMs(nextAttempt);
+    console.log(`Disconnected. Reconnecting in ${Math.round(delayMs / 1000)}s (attempt ${nextAttempt}/5)...`);
+    setTimeout(() => connect(wsUrl, config, localOrigin, nextAttempt), delayMs);
   });
 
   ws.on("error", (err) => {

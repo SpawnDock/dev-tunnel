@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { parseInbound, serialize } from "../protocol.js";
-import { buildWsUrl } from "../tunnel.js";
+import { buildWsUrl, getReconnectDelayMs } from "../tunnel.js";
 
 describe("parseInbound", () => {
   it("parses http-request", () => {
@@ -47,5 +47,13 @@ describe("serialize", () => {
         port: 3000,
       }),
     ).toBe("wss://api.example.com/tunnel/connect?protocolVersion=1&token=secret-123");
+  });
+
+  it("caps reconnect delay at 30 seconds", () => {
+    expect(getReconnectDelayMs(1)).toBe(1000);
+    expect(getReconnectDelayMs(2)).toBe(2000);
+    expect(getReconnectDelayMs(5)).toBe(16000);
+    expect(getReconnectDelayMs(6)).toBe(30000);
+    expect(getReconnectDelayMs(7)).toBe(30000);
   });
 });

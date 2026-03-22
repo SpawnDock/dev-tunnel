@@ -64,9 +64,15 @@ export async function proxyRequest(
   } catch (err: any) {
     return {
       requestId: request.requestId,
-      status: 502,
+      status: 503,
       headers: [["content-type", "application/json"]],
-      body: { encoding: "utf8", value: JSON.stringify({ error: "proxy_failed", message: err.message }) },
+      body: {
+        encoding: "utf8",
+        value: JSON.stringify({
+          error: "server_offline",
+          message: "Local development server is offline. Start it again with `npm run dev`.",
+        }),
+      },
     };
   }
 }
