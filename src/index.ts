@@ -1,14 +1,37 @@
 #!/usr/bin/env node
-import { resolveConfig } from "./config.js";
+import { pathToFileURL } from "node:url";
+import { resolveConfig, type TunnelConfig } from "./config.js";
 import { createTunnel } from "./tunnel.js";
 
-try {
-  const config = resolveConfig();
-  console.log(
+export function buildStartupMessages(config: TunnelConfig): string[] {
+  const lines = [
     `SpawnDock dev tunnel: ${config.projectSlug} -> http://127.0.0.1:${config.port}`,
-  );
-  createTunnel(config);
-} catch (err: any) {
-  console.error(`Error: ${err.message}`);
-  process.exit(1);
+  ];
+
+  if (typeof config.telegramMiniAppUrl === "string" && config.telegramMiniAppUrl.length > 0) {
+    lines.push(`TMA URL: ${config.telegramMiniAppUrl}`);
+  }
+
+  return lines;
+}
+
+export function runCli(): void {
+  try {
+    const config = resolveConfig();
+    for (const line of buildStartupMessages(config)) {
+      console.log(line);
+    }
+    createTunnel(config);
+  } catch (err: any) {
+    console.error(`Error: ${err.message}`);
+    process.exit(1);
+  }
+}
+
+const currentEntrypoint = process.argv[1]
+  ? pathToFileURL(process.argv[1]).href
+  : "";
+
+if (currentEntrypoint === import.meta.url) {
+  runCli();
 }
