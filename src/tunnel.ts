@@ -6,7 +6,6 @@ import { proxyRequest } from "./proxy.js";
 const HEARTBEAT_INTERVAL_MS = 15_000;
 const INITIAL_RECONNECT_DELAY_MS = 1_000;
 const MAX_RECONNECT_DELAY_MS = 30_000;
-const MAX_RECONNECT_ATTEMPTS = 5;
 
 export function createTunnel(config: TunnelConfig): void {
   const localOrigin = `http://127.0.0.1:${config.port}`;
@@ -119,13 +118,8 @@ function connect(wsUrl: string, config: TunnelConfig, localOrigin: string, recon
     }
 
     const nextAttempt = reconnectAttempt + 1;
-    if (nextAttempt > MAX_RECONNECT_ATTEMPTS) {
-      console.error("Tunnel reconnect failed after 5 attempts.");
-      return;
-    }
-
     const delayMs = getReconnectDelayMs(nextAttempt);
-    console.log(`Disconnected. Reconnecting in ${Math.round(delayMs / 1000)}s (attempt ${nextAttempt}/5)...`);
+    console.log(`Disconnected. Reconnecting in ${Math.round(delayMs / 1000)}s (attempt ${nextAttempt})...`);
     setTimeout(() => connect(wsUrl, config, localOrigin, nextAttempt), delayMs);
   });
 
