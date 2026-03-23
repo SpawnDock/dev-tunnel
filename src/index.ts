@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-import { pathToFileURL } from "node:url";
+import { basename } from "node:path";
+import { fileURLToPath } from "node:url";
 import { resolveConfig, type TunnelConfig } from "./config.js";
 import { createTunnel } from "./tunnel.js";
 
@@ -29,9 +30,13 @@ export function runCli(): void {
 }
 
 const currentEntrypoint = process.argv[1]
-  ? pathToFileURL(process.argv[1]).href
+  ? basename(process.argv[1])
   : "";
+const isCliEntrypoint =
+  currentEntrypoint === "spawn-dock-tunnel" ||
+  currentEntrypoint === "spawndock-tunnel" ||
+  currentEntrypoint === basename(fileURLToPath(import.meta.url));
 
-if (currentEntrypoint === import.meta.url) {
+if (isCliEntrypoint) {
   runCli();
 }
