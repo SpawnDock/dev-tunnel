@@ -70,4 +70,21 @@ describe("resolveConfig", () => {
     const config = resolveConfig([], dir);
     expect(config.previewPath).toBe("/preview/my-app");
   });
+
+  it("reads telegramMiniAppUrl from legacy spawndock.config.json", () => {
+    const dir = mkdtempSync(join(tmpdir(), "spawndock-config-"));
+    writeFileSync(
+      join(dir, "spawndock.config.json"),
+      JSON.stringify({
+        controlPlaneUrl: "http://localhost:8787",
+        projectSlug: "my-app",
+        deviceSecret: "secret123",
+        localPort: 4010,
+        telegramMiniAppUrl: "https://t.me/TMASpawnerBot/tma?startapp=my-app",
+      }),
+    );
+
+    const config = resolveConfig([], dir);
+    expect(config.telegramMiniAppUrl).toBe("https://t.me/TMASpawnerBot/tma?startapp=my-app");
+  });
 });

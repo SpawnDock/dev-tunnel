@@ -7,6 +7,7 @@ export interface TunnelConfig {
   deviceSecret: string;
   port: number;
   previewPath?: string;
+  telegramMiniAppUrl?: string;
 }
 
 const PRIMARY_CONFIG_FILE = "spawndock.dev-tunnel.json";
@@ -49,8 +50,10 @@ function normalizeConfig(data: unknown): Partial<TunnelConfig> {
         : undefined;
   const previewPath =
     typeof record.previewPath === "string" ? record.previewPath : undefined;
+  const telegramMiniAppUrl =
+    typeof record.telegramMiniAppUrl === "string" ? record.telegramMiniAppUrl : undefined;
 
-  return { controlPlane, projectSlug, deviceSecret, port, previewPath };
+  return { controlPlane, projectSlug, deviceSecret, port, previewPath, telegramMiniAppUrl };
 }
 
 function readConfigFile(dir: string): Partial<TunnelConfig> {
@@ -145,10 +148,11 @@ export function resolveConfig(
   const deviceSecret = args.deviceSecret ?? env.deviceSecret ?? file.deviceSecret;
   const port = args.port ?? env.port ?? file.port ?? 3000;
   const previewPath = file.previewPath;
+  const telegramMiniAppUrl = file.telegramMiniAppUrl;
 
   if (!controlPlane) throw new Error("Missing --control-plane or SPAWNDOCK_CONTROL_PLANE");
   if (!projectSlug) throw new Error("Missing --project-slug or SPAWNDOCK_PROJECT_SLUG");
   if (!deviceSecret) throw new Error("Missing --device-secret or SPAWNDOCK_DEVICE_SECRET");
 
-  return { controlPlane, projectSlug, deviceSecret, port, previewPath };
+  return { controlPlane, projectSlug, deviceSecret, port, previewPath, telegramMiniAppUrl };
 }
