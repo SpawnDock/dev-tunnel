@@ -1,15 +1,16 @@
 {
   "name": "@spawn-dock/dev-tunnel",
-  "version": "1.0.0",
+  "version": "1.0.0-beta.1",
   "description": "WebSocket tunnel client for SpawnDock local development preview",
   "type": "module",
   "bin": {
-    "spawn-dock-tunnel": "./dist/index.js",
-    "spawndock-tunnel": "./dist/index.js"
+    "spawn-dock-tunnel": "dist/index.js",
+    "spawndock-tunnel": "dist/index.js"
   },
   "files": ["dist"],
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "tag": "beta"
   },
   "scripts": {
     "build": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\" && tsc",
