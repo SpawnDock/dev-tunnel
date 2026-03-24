@@ -32,10 +32,10 @@ jobs:
 
       - name: Verify npm auth secret
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN || secrets.NPM_KEY }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_KEY }}
         run: |
           if [[ -z "${NODE_AUTH_TOKEN}" ]]; then
-            echo "Missing npm auth. Set repository secret NPM_TOKEN (or NPM_KEY)." >&2
+            echo "Missing npm auth. Set repository secret NPM_KEY." >&2
             exit 1
           fi
 
@@ -66,7 +66,7 @@ jobs:
       - name: Publish release (stable or prerelease)
         if: steps.version.outputs.type == 'release'
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN || secrets.NPM_KEY }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_KEY }}
         run: |
           VERSION="${{ steps.version.outputs.version }}"
           if [[ "$VERSION" == *-* ]]; then
@@ -78,5 +78,5 @@ jobs:
       - name: Publish canary
         if: steps.version.outputs.type == 'canary'
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN || secrets.NPM_KEY }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_KEY }}
         run: npm publish --access public --tag canary
