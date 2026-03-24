@@ -39,10 +39,13 @@ npx @spawn-dock/dev-tunnel \
 ```bash
 export SPAWNDOCK_CONTROL_PLANE=http://your-server:3000
 export SPAWNDOCK_PROJECT_SLUG=my-app
-export SPAWNDOCK_DEVICE_SECRET=your-device-secret
+export API_TOKEN=your-shared-api-token
 export SPAWNDOCK_PORT=3000
 npx @spawn-dock/dev-tunnel
 ```
+
+`API_TOKEN` is the preferred auth mode for standalone package usage.
+`SPAWNDOCK_DEVICE_SECRET` remains supported for bootstrap-generated project credentials.
 
 ## Configuration Priority
 

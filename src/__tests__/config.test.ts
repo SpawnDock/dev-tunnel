@@ -26,6 +26,14 @@ describe("resolveConfig", () => {
     expect(() => resolveConfig([])).toThrow("Missing");
   });
 
+  it("allows auth via API_TOKEN without device secret", () => {
+    vi.stubEnv("SPAWNDOCK_PROJECT_SLUG", "my-app");
+    vi.stubEnv("API_TOKEN", "shared_token");
+    const config = resolveConfig([]);
+    expect(config.controlPlane).toBe("https://spawn-dock.w3voice.net");
+    expect(config.apiToken).toBe("shared_token");
+  });
+
   it("defaults port to 3000", () => {
     const config = resolveConfig([
       "--control-plane", "http://localhost:8787",

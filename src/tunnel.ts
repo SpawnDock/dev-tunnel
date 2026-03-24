@@ -45,7 +45,12 @@ export function buildWsUrl(config: TunnelConfig): string {
   const currentPath = url.pathname.replace(/\/+$/, "");
   url.pathname = currentPath.length === 0 ? "/tunnel/connect" : `${currentPath}/tunnel/connect`;
   url.searchParams.set("protocolVersion", "1");
-  url.searchParams.set("token", config.deviceSecret);
+  if (config.deviceSecret && config.deviceSecret.length > 0) {
+    url.searchParams.set("token", config.deviceSecret);
+  }
+  if (config.apiToken && config.apiToken.length > 0) {
+    url.searchParams.set("apiToken", config.apiToken);
+  }
   return url.toString();
 }
 

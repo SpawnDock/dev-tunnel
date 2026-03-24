@@ -4,7 +4,8 @@ import { resolve } from "node:path";
 export interface TunnelConfig {
   controlPlane: string;
   projectSlug: string;
-  deviceSecret: string;
+  deviceSecret?: string;
+  apiToken?: string;
   port: number;
   previewPath?: string;
   telegramMiniAppUrl?: string;
@@ -42,6 +43,10 @@ function normalizeConfig(data: unknown): Partial<TunnelConfig> {
       : typeof record.deviceToken === "string"
         ? record.deviceToken
         : undefined;
+  const apiToken =
+    typeof record.apiToken === "string"
+      ? record.apiToken
+      : undefined;
   const port =
     typeof record.port === "number"
       ? record.port
@@ -53,7 +58,7 @@ function normalizeConfig(data: unknown): Partial<TunnelConfig> {
   const telegramMiniAppUrl =
     typeof record.telegramMiniAppUrl === "string" ? record.telegramMiniAppUrl : undefined;
 
-  return { controlPlane, projectSlug, deviceSecret, port, previewPath, telegramMiniAppUrl };
+  return { controlPlane, projectSlug, deviceSecret, apiToken, port, previewPath, telegramMiniAppUrl };
 }
 
 function readConfigFile(dir: string): Partial<TunnelConfig> {
@@ -139,20 +144,24 @@ export function resolveConfig(
     controlPlane: process.env.SPAWNDOCK_CONTROL_PLANE,
     projectSlug: process.env.SPAWNDOCK_PROJECT_SLUG,
     deviceSecret: process.env.SPAWNDOCK_DEVICE_SECRET,
+    apiToken: process.env.API_TOKEN || process.env.SPAWNDOCK_API_TOKEN,
     port: readNumber(process.env.SPAWNDOCK_PORT),
   };
 
   // Priority: CLI > Env > File
-  const controlPlane = args.controlPlane ?? env.controlPlane ?? file.controlPlane;
+  const controlPlane = args.controlPlane ?? env.controlPlane ?? file.controlPlane ?? "https://spawn-dock.w3voice.net";
   const projectSlug = args.projectSlug ?? env.projectSlug ?? file.projectSlug;
   const deviceSecret = args.deviceSecret ?? env.deviceSecret ?? file.deviceSecret;
+  const apiToken = env.apiToken ?? file.apiToken;
   const port = args.port ?? env.port ?? file.port ?? 3000;
   const previewPath = file.previewPath;
   const telegramMiniAppUrl = file.telegramMiniAppUrl;
 
   if (!controlPlane) throw new Error("Missing --control-plane or SPAWNDOCK_CONTROL_PLANE");
   if (!projectSlug) throw new Error("Missing --project-slug or SPAWNDOCK_PROJECT_SLUG");
-  if (!deviceSecret) throw new Error("Missing --device-secret or SPAWNDOCK_DEVICE_SECRET");
+  if (!deviceSecret && !apiToken) {
+    throw new Error("Missing authentication: set API_TOKEN (preferred) or --device-secret");
+  }
 
-  return { controlPlane, projectSlug, deviceSecret, port, previewPath, telegramMiniAppUrl };
+  return { controlPlane, projectSlug, deviceSecret, apiToken, port, previewPath, telegramMiniAppUrl };
 }
