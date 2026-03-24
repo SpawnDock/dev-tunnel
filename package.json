@@ -1,6 +1,6 @@
 {
   "name": "@spawn-dock/dev-tunnel",
-  "version": "1.0.0-beta.1",
+  "version": "1.0.0-beta.2",
   "description": "WebSocket tunnel client for SpawnDock local development preview",
   "type": "module",
   "bin": {
